@@ -1,64 +1,36 @@
-const onSubmitHandler = async (e) => {
+import { createContext, useContext, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { blog_data } from "../assets/assets";
 
-  e.preventDefault();
+export const AppContext = createContext();
 
-  if (!image) {
-    return toast.error("Please upload image");
-  }
+export const AppProvider = ({ children }) => {
+  const navigate = useNavigate();
 
-  if (!title || !subTitle) {
-    return toast.error("Fill all fields");
-  }
+  const [token, setToken] = useState(localStorage.getItem("token") || "");
+  const [blogs, setBlogs] = useState(blog_data || []);
+  const [input, setInput] = useState("");
 
-  try {
+  const value = {
+    navigate,
 
-    setIsAdding(true);
+    token,
+    setToken,
 
-    const blog = {
-      title,
-      subTitle,
-      description: quillRef.current.root.innerHTML,
-      category,
-      isPublished
-    };
+    blogs,
+    setBlogs,
 
-    const formData = new FormData();
+    input,
+    setInput,
+  };
 
-    formData.append("parse", JSON.stringify(blog));
-    formData.append("image", image);
+  return (
+    <AppContext.Provider value={value}>
+      {children}
+    </AppContext.Provider>
+  );
+};
 
-
-    const { data } = await axios.post(
-      "/api/blog/add",
-      formData
-    );
-
-
-    if (data.success) {
-
-      toast.success("Blog added successfully");
-
-      setTitle("");
-      setSubTitle("");
-      setImage(false);
-      setCategory("startup");
-      setIsPublished(false);
-
-      quillRef.current.root.innerHTML = "";
-
-    } else {
-      toast.error(data.message);
-    }
-
-  } catch (error) {
-
-    console.log(error);
-
-    toast.error(
-      error?.response?.data?.message || "Upload failed"
-    );
-
-  } finally {
-    setIsAdding(false);
-  }
+export const useAppContext = () => {
+  return useContext(AppContext);
 };
